@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Хидроакустика</title>
+<style>
+:root { --bg:#0b1220; --card:#111a2e; --text:#e7eefc; --muted:#a8b3cf; --accent:#4da3ff; --good:#3ddc97; --bad:#ff5c7a; }
+*{ box-sizing:border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+body{ margin:0; background:linear-gradient(160deg,#081022,#0b1220); color:var(--text); }
+header{ position:sticky; top:0; backdrop-filter: blur(10px); background:rgba(11,18,32,.7); border-bottom:1px solid rgba(255,255,255,.08); z-index:10; }
+.wrap{ max-width:1000px; margin:0 auto; padding:18px; }
+.row{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+.title{ font-weight:700; letter-spacing:.2px; }
+.sub{ color:var(--muted); font-size:14px; }
+.bar{ height:10px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden; }
+.bar > div{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent),#7cc6ff); transition:width .25s ease; }
+main{ padding:20px 0 60px; }
+.card{ background:rgba(17,26,46,.85); border:1px solid rgba(255,255,255,.08); border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+.cardPad{ padding:18px; }
+.grid{ display:grid; grid-template-columns:1fr; gap:14px; }
+@media(min-width:900px){ .grid{ grid-template-columns: 2fr 1fr; } }
+.h1{ font-size:26px; margin:0 0 10px; display:inline-block; position:relative; }
+.h1::after{ content:""; display:block; width:58%; height:3px; margin-top:8px; border-radius:999px; background:linear-gradient(90deg, rgba(77,163,255,.95), rgba(124,198,255,.15)); }
+.h2{ font-size:18px; margin:18px 0 10px; color:#d8e6ff; }
+ul{ margin:10px 0 0 18px; color:var(--text); }
+li{ margin:6px 0; }
+.pill{ display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:rgba(77,163,255,.12); border:1px solid rgba(77,163,255,.35); color:#cfe7ff; font-size:12px; }
+.btns{ display:flex; gap:10px; flex-wrap:wrap; }
+button{ border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer; }
+button:hover{ background:rgba(255,255,255,.10); }
+button.primary{ background:rgba(77,163,255,.20); border-color:rgba(77,163,255,.55); }
+.footerNav{ position:fixed; bottom:0; left:0; right:0; background:rgba(11,18,32,.75); border-top:1px solid rgba(255,255,255,.08); backdrop-filter: blur(10px); }
+.footerNav .wrap{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.book{ max-width:70ch; margin:0; }
+.book p{ color:var(--text); line-height:1.85; margin:10px 0; font-size:16px; }
+.book p.lead{ color:#d8e6ff; font-size:16px; }
+.book .dropcap:first-letter{ float:left; font-size:42px; line-height:38px; padding:6px 8px 0 0; color:#d8e6ff; font-weight:800; }
+.quizBox{ margin-top:12px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03); border-radius:16px; padding:14px; }
+.qTitle{ font-weight:800; color:#d8e6ff; margin:0 0 8px; }
+.qPrompt{ margin:0 0 12px; line-height:1.75; color:var(--text); }
+.qOptions{ display:grid; gap:10px; }
+.qOpt{ text-align:left; border-radius:14px; padding:12px 12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05); }
+.qOpt:hover{ background:rgba(255,255,255,.08); }
+.qOpt.correct{ border-color:rgba(61,220,151,.55); background:rgba(61,220,151,.12); }
+.qOpt.wrong{ border-color:rgba(255,92,122,.55); background:rgba(255,92,122,.12); }
+.qFeedback{ margin-top:12px; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.18); color:var(--text); line-height:1.6; }
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="row"><div><div class="title" id="courseTitle"></div><div class="sub" id="courseSub"></div></div><div class="pill"><span id="slideCounter"></span></div></div><div style="margin-top:12px" class="bar"><div id="progressFill"></div></div></div></header>
+<main><div class="wrap"><div class="grid"><section class="card cardPad" id="slide"></section><aside class="card cardPad"><div class="h2">Learning outcomes</div><ul id="goals"></ul></aside></div></div></main>
+<div class="footerNav"><div class="wrap"><div class="btns"><button id="btnPrev">← Prev</button><button id="btnNext" class="primary">Next →</button></div><div class="sub" id="statusLine"></div></div></div>
+<script>
+const lessonData = {
+  "courseTitle": "Хидроакустика",
+  "courseSub": "Основни физически понятия",
+  "learningOutcomes": [
+    "Да се обясни ролята на въздуха във филтърната кана.",
+    "Да се различават налягането и дебитът през филтъра.",
+    "Да се обсъди какво става при понижаване на нивото на водата."
+  ],
+  "slides": [
+    {
+      "id": "s1",
+      "type": "content",
+      "title": "Нека първо представим няколко основни понятия",
+      "useDropcap": true,
+      "text": "Нека си представим цилиндрично бутало и камера с въздух и газ. Нека поставим тежест върху буталото. Какво ще се случи с газа? От силата на тежестта буталото ще потъне и ще свие газа, с това налягането на газа ще нарасне. Буталото ще спре в положение, при което натискът на тежестта отгоре ще се уравновеси с натиска от страна на газа върху буталото нагоре.\n\nНека си представим още едно бутало, но с по-голяма площ и два пъти по-голяма тежест върху него. Колко по-голямата трябва да бъде площта на буталото, за да се получи еднакво с първия случай налягане?\n\n<div style=\"text-align:center;margin:20px 0;\">\n  <a href=\"images/piston_gas_pressure.png\" target=\"_blank\">\n    <img src=\"images/piston_gas_pressure.png\" alt=\"Piston pressing against a gas in a chamber\" style=\"max-width:600px;width:100%;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,0.25);cursor:pointer;\">\n  <\/a>\n  <div style=\"font-size:0.9em;color:#a8b3cf;margin-top:6px;\">Piston pressing against a gas in a chamber (click to enlarge)<\/div>\n<\/div>",
+      "bullets": []
+    },
+    {
+      "id": "s2",
+      "type": "content",
+      "title": "Налягане и площ",
+      "useDropcap": false,
+      "text": "Налягането е силата, отнесена към площта, върху която действа: p = F / A. Ако площта на буталото е два пъти по-голяма, за същото допълнително налягане е нужна два пъти по-голяма сила.",
+      "bullets": []
+    },
+    {
+      "id": "q1",
+      "type": "quiz",
+      "title": "Проверка на разбирането",
+      "question": "Ако площта на буталото се удвои, каква сила е необходима за същото налягане?",
+      "options": [
+        "Два пъти по-малка",
+        "Същата",
+        "Два пъти по-голяма"
+      ],
+      "correctIndex": 2,
+      "explanation": "От p = F/A следва F = pA."
+    }
+  ]
+};
+let state = { idx:0, quiz:{} };
+const $ = (sel) => document.querySelector(sel);
+function escapeHtml(str){ return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;"); }
+function paragraphsFromText(text){ return String(text || "").split(/\n\s*\n/).map(s => s.trim()).filter(Boolean); }
+function renderContent(sl){ const rawText = String(sl.text || ""); const containsHtml = /<[^>]+>/.test(rawText); let pHtml = ""; if(containsHtml){ pHtml = rawText; } else { paragraphsFromText(rawText).forEach((p,i)=>{ const cls = i===0 ? (sl.useDropcap ? "lead dropcap" : "lead") : ""; pHtml += "<p class=\""+cls+"\">" + escapeHtml(p) + "</p>"; }); } if(!pHtml){ pHtml = "<p class=\"lead dropcap\">Add slide text in the editor.</p>"; } let ul = ""; if((sl.bullets||[]).length){ ul = "<ul>"; sl.bullets.forEach(b=> ul += "<li>"+escapeHtml(b)+"</li>"); ul += "</ul>"; } return "<div class=\"h1\">"+escapeHtml(sl.title)+"</div><div class=\"book\">"+pHtml+ul+"</div>"; }
+function renderQuiz(sl){ const prev = state.quiz[sl.id]; const chosen = prev && typeof prev.selectedIndex === "number" ? prev.selectedIndex : null; const answered = !!prev; let opts = ""; sl.options.forEach((txt,i)=>{ let cls = "qOpt"; if(answered){ if(i===sl.correctIndex) cls += " correct"; else if(i===chosen) cls += " wrong"; } opts += "<button class=\""+cls+"\" data-i=\""+i+"\" type=\"button\">"+escapeHtml(txt)+"</button>"; }); const fb = answered ? "<div class=\"qFeedback\">" + (prev.isCorrect ? "✅ Correct. " : "❌ Not quite. ") + escapeHtml(sl.explanation || "") + "</div>" : ""; return "<div class=\"quizBox\"><div class=\"qTitle\">"+escapeHtml(sl.title)+"</div><p class=\"qPrompt\">"+escapeHtml(sl.question||"")+"</p><div class=\"qOptions\">"+opts+"</div>"+fb+"</div>"; }
+function wireQuiz(sl){ document.querySelectorAll(".qOpt").forEach(btn => { btn.onclick = () => { const i = Number(btn.getAttribute("data-i")); state.quiz[sl.id] = { selectedIndex:i, isCorrect:i === sl.correctIndex }; render(); }; }); }
+function render(){ $("#courseTitle").textContent = lessonData.courseTitle; $("#courseSub").textContent = lessonData.courseSub; const goals = $("#goals"); goals.innerHTML = ""; (lessonData.learningOutcomes || []).forEach(g => { const li = document.createElement("li"); li.textContent = g; goals.appendChild(li); }); state.idx = Math.max(0, Math.min(state.idx, lessonData.slides.length - 1)); $("#slideCounter").textContent = (state.idx + 1) + " / " + lessonData.slides.length; $("#progressFill").style.width = (((state.idx + 1)/lessonData.slides.length) * 100) + "%"; const sl = lessonData.slides[state.idx]; $("#slide").innerHTML = sl.type === "quiz" ? renderQuiz(sl) : renderContent(sl); $("#statusLine").textContent = sl.type === "quiz" ? "Quick Check" : "Reading slide"; $("#btnPrev").disabled = state.idx === 0; $("#btnNext").disabled = state.idx === lessonData.slides.length - 1; if(sl.type === "quiz") wireQuiz(sl); }
+$("#btnPrev").onclick = () => { state.idx = Math.max(0, state.idx - 1); render(); };
+$("#btnNext").onclick = () => { state.idx = Math.min(lessonData.slides.length - 1, state.idx + 1); render(); };
+document.addEventListener("keydown", (e) => { if(e.key === "ArrowLeft"){ state.idx = Math.max(0, state.idx - 1); render(); } else if(e.key === "ArrowRight"){ state.idx = Math.min(lessonData.slides.length - 1, state.idx + 1); render(); } });
+render();
+</script>
+</body>
+</html>
